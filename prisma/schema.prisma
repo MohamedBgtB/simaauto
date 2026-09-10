@@ -1,0 +1,141 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+enum VehicleStatus {
+  Disponible
+  Reserve  @map("Réservé")
+  Vendu
+}
+
+enum LeadChannel {
+  WhatsApp
+  PhoneCall @map("Phone Call")
+  Form
+}
+
+model Vehicle {
+  id                 Int       @id @default(autoincrement())
+  reference          String    @unique @db.VarChar(50)
+  make               String    @db.VarChar(100)
+  modelRange         String    @map("model_range") @db.VarChar(100)
+  trimLine           String?   @map("trim_line") @db.VarChar(150)
+  priceDh            Decimal   @map("price_dh") @db.Decimal(12, 2)
+  mileageKm          Int       @map("mileage_km")
+  firstRegistration  String    @map("first_registration") @db.VarChar(10)
+  status             VehicleStatus @default(Disponible)
+  featured           Boolean   @default(false)
+  mainImageUrl       String    @map("main_image_url") @db.VarChar(500)
+  description        String?   @db.Text
+  createdAt          DateTime  @default(now()) @map("created_at")
+  updatedAt          DateTime  @updatedAt @map("updated_at")
+
+  technicalData      VehicleTechnicalData?
+  gallery            VehicleGallery[]
+  features           VehicleFeature[]
+  leads              Lead[]
+
+  @@index([make, modelRange], name: "idx_make_model")
+  @@index([status], name: "idx_status")
+  @@index([priceDh], name: "idx_price")
+  @@index([mileageKm], name: "idx_mileage")
+  @@map("vehicles")
+}
+
+model VehicleTechnicalData {
+  vehicleId           Int     @id @map("vehicle_id")
+  vehicleCondition     String? @default("Used vehicle, Accident-free") @map("vehicle_condition") @db.VarChar(100)
+  category             String? @default("SUV/Off-road Vehicle/Pickup Truck") @db.VarChar(100)
+  origin                String? @default("German edition") @db.VarChar(100)
+  ownersCount           Int?    @default(1) @map("owners_count")
+  cubicCapacity         String? @map("cubic_capacity") @db.VarChar(50)
+  power                 String? @db.VarChar(50)
+  driveType             String? @default("Internal combustion engine") @map("drive_type") @db.VarChar(100)
+  fuel                  String? @default("Petrol") @db.VarChar(50)
+  energyConsumption     String? @map("energy_consumption") @db.VarChar(50)
+  co2Emissions          String? @map("co2_emissions") @db.VarChar(50)
+  transmission          String? @default("Automatic") @db.VarChar(50)
+  emissionClass         String? @default("Euro6d-TEMP") @map("emission_class") @db.VarChar(50)
+  emissionsSticker      String? @default("4 (Green)") @map("emissions_sticker") @db.VarChar(50)
+  seatsCount             Int?    @default(5) @map("seats_count")
+  doorCount              String? @default("4/5") @map("door_count") @db.VarChar(20)
+  climatisation          String? @default("Automatic climatisation, 3 zones") @db.VarChar(100)
+  parkingSensors         String? @default("Rear, Front, Camera") @map("parking_sensors") @db.VarChar(150)
+  airbags                String? @default("Front and Side and More Airbags") @db.VarChar(150)
+  manufacturerColour     String? @map("manufacturer_colour") @db.VarChar(100)
+  colour                 String? @db.VarChar(100)
+  interiorDesign         String? @map("interior_design") @db.VarChar(150)
+  weight                 String? @db.VarChar(50)
+  cylinders              Int?    @default(4)
+  tankCapacity            String? @map("tank_capacity") @db.VarChar(50)
+  trailerLoadBraked       String? @map("trailer_load_braked") @db.VarChar(50)
+  trailerLoadUnbraked     String? @map("trailer_load_unbraked") @db.VarChar(50)
+
+  vehicle Vehicle @relation(fields: [vehicleId], references: [id], onDelete: Cascade)
+
+  @@map("vehicle_technical_data")
+}
+
+model Feature {
+  id    Int    @id @default(autoincrement())
+  name  String @unique @db.VarChar(100)
+
+  vehicles VehicleFeature[]
+
+  @@map("features")
+}
+
+model VehicleFeature {
+  vehicleId Int @map("vehicle_id")
+  featureId Int @map("feature_id")
+
+  vehicle Vehicle @relation(fields: [vehicleId], references: [id], onDelete: Cascade)
+  feature Feature @relation(fields: [featureId], references: [id], onDelete: Cascade)
+
+  @@id([vehicleId, featureId])
+  @@map("vehicle_features")
+}
+
+// Holds every uploaded photo for a vehicle (15-20 supported). isHero marks
+// the single photo used as the cover / list thumbnail; vehicles.main_image_url
+// is kept in sync with it for fast list queries.
+model VehicleGallery {
+  id            Int     @id @default(autoincrement())
+  vehicleId     Int     @map("vehicle_id")
+  imageUrl      String  @map("image_url") @db.VarChar(500)
+  displayOrder  Int     @default(0) @map("display_order")
+  isHero        Boolean @default(false) @map("is_hero")
+
+  vehicle Vehicle @relation(fields: [vehicleId], references: [id], onDelete: Cascade)
+
+  @@map("vehicle_gallery")
+}
+
+model Lead {
+  id            Int          @id @default(autoincrement())
+  vehicleId     Int?         @map("vehicle_id")
+  customerName  String?      @map("customer_name") @db.VarChar(100)
+  phoneNumber   String?      @map("phone_number") @db.VarChar(30)
+  channel       LeadChannel  @default(WhatsApp)
+  notes         String?      @db.Text
+  createdAt     DateTime     @default(now()) @map("created_at")
+
+  vehicle Vehicle? @relation(fields: [vehicleId], references: [id], onDelete: SetNull)
+
+  @@map("leads")
+}
+
+// Single admin account for the dealership back-office.
+model Admin {
+  id           Int      @id @default(autoincrement())
+  email        String   @unique @db.VarChar(150)
+  passwordHash String   @map("password_hash") @db.VarChar(255)
+  createdAt    DateTime @default(now()) @map("created_at")
+
+  @@map("admins")
+}
