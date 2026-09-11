@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import bcrypt from "bcryptjs";
 import { prisma } from "@/lib/prisma";
-import { createSession } from "@/lib/auth";
+import { COOKIE_NAME, createSessionToken, sessionCookieOptions } from "@/lib/auth";
 
 export async function POST(req: NextRequest) {
   try {
@@ -20,8 +20,10 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Identifiants invalides" }, { status: 401 });
     }
 
-    await createSession(admin.email);
-    return NextResponse.json({ ok: true });
+    const token = await createSessionToken(admin.email);
+    const response = NextResponse.json({ ok: true });
+    response.cookies.set(COOKIE_NAME, token, sessionCookieOptions());
+    return response;
   } catch (err) {
     console.error(err);
     return NextResponse.json({ error: "Erreur serveur" }, { status: 500 });

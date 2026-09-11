@@ -25,8 +25,8 @@ export const BODY_CATEGORIES = [
   "Monospace",
 ];
 
-export const MIN_PHOTOS = 15;
-export const MAX_PHOTOS = 20;
+export const MIN_PHOTOS = 0;
+export const MAX_PHOTOS = 15;
 export const MAX_UPLOAD_MB = 8;
 
 export const WHATSAPP_NUMBER = process.env.NEXT_PUBLIC_WHATSAPP_NUMBER || "212661951459";

@@ -10,13 +10,16 @@ function getSecret() {
   return new TextEncoder().encode(secret);
 }
 
-export async function createSession(email: string) {
-  const token = await new SignJWT({ email })
+export async function createSessionToken(email: string) {
+  return new SignJWT({ email })
     .setProtectedHeader({ alg: ALG })
     .setIssuedAt()
     .setExpirationTime("7d")
     .sign(getSecret());
+}
 
+export async function createSession(email: string) {
+  const token = await createSessionToken(email);
   cookies().set(COOKIE_NAME, token, {
     httpOnly: true,
     secure: process.env.NODE_ENV === "production",
@@ -24,6 +27,16 @@ export async function createSession(email: string) {
     path: "/",
     maxAge: 60 * 60 * 24 * 7,
   });
+}
+
+export function sessionCookieOptions() {
+  return {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === "production",
+    sameSite: "lax" as const,
+    path: "/",
+    maxAge: 60 * 60 * 24 * 7,
+  };
 }
 
 export async function destroySession() {
