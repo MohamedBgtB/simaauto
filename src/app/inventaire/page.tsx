@@ -1,12 +1,13 @@
 import VehicleCard from "@/components/VehicleCard";
 import { getVehicles, getDistinctMakes } from "@/lib/vehicles";
+import { BODY_CATEGORIES } from "@/lib/constants";
 
 export const revalidate = 0;
 
 export default async function InventoryPage({
   searchParams,
 }: {
-  searchParams: { make?: string; maxPrice?: string; maxMileage?: string; q?: string };
+  searchParams: { make?: string; maxPrice?: string; maxMileage?: string; q?: string; category?: string };
 }) {
   const [vehicles, makes] = await Promise.all([
     getVehicles({
@@ -14,6 +15,7 @@ export default async function InventoryPage({
       maxPrice: searchParams.maxPrice ? Number(searchParams.maxPrice) : undefined,
       maxMileage: searchParams.maxMileage ? Number(searchParams.maxMileage) : undefined,
       q: searchParams.q || undefined,
+      category: searchParams.category || undefined,
     }),
     getDistinctMakes(),
   ]);
@@ -38,6 +40,18 @@ export default async function InventoryPage({
           {makes.map((m) => (
             <option key={m} value={m}>
               {m}
+            </option>
+          ))}
+        </select>
+        <select
+          name="category"
+          defaultValue={searchParams.category || ""}
+          className="bg-zinc-950 border border-zinc-800 rounded-xl px-3 py-2.5 text-sm text-white focus:outline-none focus:border-sima-gold"
+        >
+          <option value="">Toutes les catégories</option>
+          {BODY_CATEGORIES.map((category) => (
+            <option key={category} value={category}>
+              {category}
             </option>
           ))}
         </select>

@@ -1,8 +1,8 @@
 import Link from "next/link";
-import { MessageSquare, SlidersHorizontal } from "lucide-react";
+import { MessageSquare, Search, SlidersHorizontal } from "lucide-react";
 import VehicleCard from "@/components/VehicleCard";
 import { getNewArrivals } from "@/lib/vehicles";
-import { WHATSAPP_NUMBER } from "@/lib/constants";
+import { BODY_CATEGORIES, WHATSAPP_NUMBER } from "@/lib/constants";
 
 export const revalidate = 0;
 
@@ -43,6 +43,46 @@ export default async function HomePage() {
             <MessageSquare className="w-4 h-4" />
             <span>Vendre Votre Voiture</span>
           </a>
+        </div>
+      </section>
+
+      <section className="bg-zinc-950 border-b border-zinc-800">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-5">
+          <form method="get" action="/inventaire" className="flex flex-wrap gap-3 items-center">
+            <div className="flex flex-1 min-w-[280px] items-center gap-2 bg-zinc-900 border border-zinc-800 rounded-xl px-4 py-3">
+              <Search className="w-4 h-4 text-sima-gold" />
+              <input
+                type="text"
+                name="q"
+                placeholder="Rechercher une voiture..."
+                className="flex-1 bg-transparent text-sm text-white placeholder:text-zinc-500 outline-none"
+              />
+            </div>
+            <button
+              type="submit"
+              className="bg-sima-gold hover:bg-sima-goldHover text-zinc-950 font-bold px-5 py-3 rounded-xl text-sm transition"
+            >
+              Rechercher
+            </button>
+          </form>
+
+          <div className="mt-4 flex flex-wrap gap-2">
+            <Link
+              href="/inventaire"
+              className="rounded-full border border-zinc-700 px-4 py-2 text-xs font-semibold text-zinc-300 hover:bg-sima-gold hover:text-zinc-950 transition"
+            >
+              Tous les véhicules
+            </Link>
+            {BODY_CATEGORIES.map((category) => (
+              <Link
+                key={category}
+                href={`/inventaire?category=${encodeURIComponent(category)}`}
+                className="rounded-full border border-zinc-700 px-4 py-2 text-xs font-semibold text-zinc-300 hover:bg-sima-gold hover:text-zinc-950 transition"
+              >
+                {category}
+              </Link>
+            ))}
+          </div>
         </div>
       </section>
 
