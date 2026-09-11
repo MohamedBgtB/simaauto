@@ -1,10 +1,34 @@
 "use client";
 
-import { useState } from "react";
+import { Suspense, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { CarFront, Lock } from "lucide-react";
 
 export default function AdminLoginPage() {
+  return (
+    <Suspense fallback={<LoadingAdminLogin />}> 
+      <AdminLoginContent />
+    </Suspense>
+  );
+}
+
+function LoadingAdminLogin() {
+  return (
+    <main className="flex-1 flex items-center justify-center px-4 py-16">
+      <div className="w-full max-w-sm bg-zinc-900 border border-zinc-800 rounded-2xl p-8 shadow-2xl">
+        <div className="flex flex-col items-center mb-6">
+          <div className="w-12 h-12 rounded-xl bg-sima-gold/10 border border-sima-gold/30 flex items-center justify-center text-sima-gold mb-3">
+            <CarFront className="w-7 h-7" />
+          </div>
+          <h1 className="font-extrabold text-lg text-white">SIMA AUTO — Admin</h1>
+          <p className="text-xs text-zinc-400 mt-1">Connectez-vous pour gérer l'inventaire</p>
+        </div>
+      </div>
+    </main>
+  );
+}
+
+function AdminLoginContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [email, setEmail] = useState("");
